@@ -13,7 +13,7 @@ opLentDydis   EQU 5000
 grpPoslinkis  EQU 4096
 
 .data
-  masKodas  db 24h, 24h, 80h, 06h, 10h, 02h, 30h, 8ch, 0c8h, 0b4h, 09h, 0bah, 0deh, 01h, 0cdh, 21h, 0b4h, 0ah, 0bah, 63h, 01h, 0cdh, 21h, 0b4h, 09h, 0bah, 11h, 02h
+  masKodas  db 0Eh, 24h, 24h, 80h, 06h, 10h, 02h, 30h, 8ch, 0c8h, 0b4h, 09h, 0bah, 0deh, 01h, 0cdh, 21h, 0b4h, 0ah, 0bah, 63h, 01h, 0cdh, 21h, 0b4h, 09h, 0bah, 11h, 02h
   skBuf     db skBufDydis dup ('$')
   rBuf      db rBufDydis dup ('$')
 
@@ -213,8 +213,6 @@ PROC dekoduotiArgumenta
   jne NETIESIOGINIS_ADRESAS
   call skaitytiZodi
   call rasytiAX
-  mov dl, "h"
-  call rasytiSimboli
   jmp OP_ATM_0_PABAIGA
   NETIESIOGINIS_ADRESAS:
   mov ax, rmf
@@ -241,8 +239,6 @@ PROC dekoduotiArgumenta
   call rasytiSimboli
   call skaitytiBaita
   call rasytiAL
-  mov dl, "h"
-  call rasytiSimboli
   mov dl, "]"
   call rasytiSimboli
   jmp ARGUMENTO_DEKODAVIMO_PABAIGA
@@ -260,8 +256,6 @@ PROC dekoduotiArgumenta
   call rasytiSimboli
   call skaitytiZodi
   call rasytiAX
-  mov dl, "h"
-  call rasytiSimboli
   mov dl, "]"
   call rasytiSimboli
   jmp ARGUMENTO_DEKODAVIMO_PABAIGA
