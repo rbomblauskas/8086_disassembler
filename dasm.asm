@@ -250,6 +250,10 @@ PROC dekoduotiArgumenta
   mov dl, 3
   mul dl
   mov dx, offset regLent0
+  CMP byte ptr[bx+1], "b"
+  JE REGISTRO_ARGUMENTO_IRASYMAS
+  MOV dx, offset regLent1
+  REGISTRO_ARGUMENTO_IRASYMAS:
   add dx, ax
   call rasytiIkiDolerio
   jmp ARGUMENTO_DEKODAVIMO_PABAIGA
@@ -262,9 +266,9 @@ PROC dekoduotiArgumenta
   mul dl
   MOV dx, offset regLent0
   CMP byte ptr[bx+1], "b"
-  JE REGISTRO_ARGUMENTO_IRASYMAS
+  JE REGISTRO_ARGUMENTO_IRASYMAS_2
   MOV dx, offset regLent1
-  REGISTRO_ARGUMENTO_IRASYMAS:
+  REGISTRO_ARGUMENTO_IRASYMAS_2:
   ADD dx, ax
   CALL rasytiIkiDolerio
   JMP ARGUMENTO_DEKODAVIMO_PABAIGA
