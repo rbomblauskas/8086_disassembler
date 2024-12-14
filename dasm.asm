@@ -13,7 +13,7 @@ opLentDydis   EQU 5000
 grpPoslinkis  EQU 4096
 
 .data
-  masKodas  db 83h, 0E9h, 03h, 34h, 0b4h, 09h, 0bah, 0deh, 01h, 0cdh, 21h, 0b4h, 0ah, 0bah, 63h, 01h, 0cdh, 21h, 0b4h, 09h, 0bah, 11h, 02h
+  masKodas  db 24h, 24h, 80h, 06h, 10h, 02h, 30h, 8ch, 0c8h, 0b4h, 09h, 0bah, 0deh, 01h, 0cdh, 21h, 0b4h, 0ah, 0bah, 63h, 01h, 0cdh, 21h, 0b4h, 09h, 0bah, 11h, 02h
   skBuf     db skBufDydis dup ('$')
   rBuf      db rBufDydis dup ('$')
 
@@ -31,13 +31,16 @@ grpPoslinkis  EQU 4096
   rmf  dw 0
   
   arDekModRM db 0
+  dekInstruk db 5
 
   rmLent    db "BX+SI$BX+DI$BP+SI$BP+DI$SI$$$$DI$$$$BP$$$$BX$"
 	regLent0  db "AL$CL$DL$BL$AH$CH$DH$BH$"
   regLent1  db "AX$CX$DX$BX$SP$BP$SI$DI$"
+  regLent2  db "ES$CS$SS$DS$"
   
 
   klZin     db "Klaida", 10, 13, "$"
+  naujaEil  db 10, 13, "$"
   
 
 .code
@@ -61,12 +64,19 @@ grpPoslinkis  EQU 4096
   JC	KLAIDA
 
   MOV si, offset masKodas
-  MOV di, offset rBuf
   
+  INSTRUKCIJU_DEKODAVIMAS:
+  MOV di, offset rBuf
   MOV arDekModRM, 0
   CALL dekoduotiInstrukcija
   MOV dx, offset rBuf
   CALL spausdintiEilute
+  
+  DEC dekInstruk
+  CMP dekInstruk, 0
+  JNE INSTRUKCIJU_DEKODAVIMAS
+
+
   
   PABAIGA:
   MOV ah, 4Ch
@@ -124,10 +134,20 @@ PROC dekoduotiInstrukcija
   CMP byte ptr[bx], " "
   JNE ARGUMENTU_DEKODAVIMAS
   MOV bx, instruk
-  CALL praleistiIkiTarpo
+  CALL praleistiArgumenta
   ARGUMENTU_DEKODAVIMAS:
+
   CALL rasytiTarpa
   CALL dekoduotiArgumenta
+  CALL praleistiArgumenta
+  CMP byte ptr[bx], " "
+  JE PRALEISTI_ANTRA_ARGUMENTA
+  MOV dx, ","
+  CALL rasytiSimboli
+  CALL rasytiTarpa
+  CALL dekoduotiArgumenta
+  PRALEISTI_ANTRA_ARGUMENTA:
+  MOV byte ptr [di], "$"
 
 
   POP cx
@@ -139,6 +159,7 @@ ENDP dekoduotiInstrukcija
 PROC dekoduotiArgumenta
   ;ADRESAS I ARGUMENTO BUFERI LAIKOMAS BX REGISTRE
   PUSH ax
+  PUSH bx
 
   CMP byte ptr[bx], "e"
   JNE NEPRASIDEDA_E_MAZAJA
@@ -274,13 +295,41 @@ PROC dekoduotiArgumenta
   JMP ARGUMENTO_DEKODAVIMO_PABAIGA
   
   NEPRASIDEDA_G:
+  CMP byte ptr[bx], "I"
+  JE PRASIDEDA_I_J_O
+  CMP byte ptr[bx], "J"
+  JE PRASIDEDA_I_J_O
+  CMP byte ptr[bx], "O"
+  JE PRASIDEDA_I_J_O
+  JMP NEPRASIDEDA_I_J_O
+  PRASIDEDA_I_J_O:
+  CMP byte ptr[bx+1], "v"
+  JE BETARPISKAS_ZODIS
+  BETARPISKAS_BAITAS:
+  CALL skaitytiBaita
+  CALL rasytiAL
+  JMP ARGUMENTO_DEKODAVIMO_PABAIGA
+  BETARPISKAS_ZODIS:
+  CALL skaitytiZodi
+  CALL rasytiAX
+  JMP ARGUMENTO_DEKODAVIMO_PABAIGA
 
+  NEPRASIDEDA_I_J_O:
+  CMP byte ptr[bx], "S"
+  JNE NEPRASIDEDA_S
+  CALL dekoduotiModRM
+  mov ax, regf
+  mov dl, 3
+  mul dl
+  mov dx, offset regLent2
+  add dx, ax
+  call rasytiIkiDolerio
+  JMP ARGUMENTO_DEKODAVIMO_PABAIGA
 
-
-
+  NEPRASIDEDA_S:
 
   ARGUMENTO_DEKODAVIMO_PABAIGA:
-
+  POP bx
   POP ax
   RET
 ENDP dekoduotiArgumenta
@@ -333,8 +382,12 @@ ENDP spausdinti16Baitu
 
 PROC spausdintiEilute
 	PUSH ax
+  PUSH dx
 	MOV ah, 09
 	INT 21h
+  MOV dx, offset naujaEil
+  INT 21h
+  POP dx
 	POP ax
   RET
 ENDP spausdintiEilute
@@ -386,7 +439,7 @@ PROC rasytiSimboli
   RET
 ENDP rasytiSimboli
 
-PROC praleistiIkiTarpo
+PROC praleistiArgumenta
   ;PRALEIDZIA BUFERI IS BX IKI TARPO SIMBOLIO
   PRALEISTI_IKI_TARPO_CIKLAS:
   INC BX
@@ -394,7 +447,7 @@ PROC praleistiIkiTarpo
   JNE PRALEISTI_IKI_TARPO_CIKLAS
   INC BX
   RET
-ENDP praleistiIkiTarpo
+ENDP praleistiArgumenta
 
 PROC rasytiAX
 	push ax
