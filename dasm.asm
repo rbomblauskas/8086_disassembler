@@ -52,7 +52,7 @@ grpPoslinkis  EQU 4096
   regLent1  db "AX$CX$DX$BX$SP$BP$SI$DI$"
   regLent2  db "ES$CS$SS$DS$"
   
-  tarpas    db 5 dup(" "), "$"
+  tarpas    db 20 dup(" "), "$"
   klZin     db "Klaida", 10, 13, "$"
   naujaEil  db 10, "$"
   pagZin    db "Sveiki, cia pagalbos pranesimas", 10, 13, "$"
@@ -141,6 +141,7 @@ grpPoslinkis  EQU 4096
   MOV di, offset rBuf
   CALL dekoduotiInstrukcija
 
+  CALL spausdintiDekoduotusBaitus
   CALL rasytiInstrukcija
 
   ;CALL spausdintiDekoduotusBaitus
@@ -254,6 +255,7 @@ PROC dekoduotiInstrukcija
   ADD bx, grpPoslinkis
   ADD bx, ax
   CMP byte ptr[bx], "-"
+  JE NEATPAZINTA_INSTRUKCIJA
   NERA_GRUPEJE:
   CALL rasytiIkiTarpo
   CMP byte ptr[bx], " "
@@ -272,7 +274,8 @@ PROC dekoduotiInstrukcija
   CALL dekoduotiArgumenta
 
   INSTRUKCIJOS_DEKODAVIMO_PABAIGA:
-  MOV byte ptr [di], "$"
+  MOV byte ptr[di], 10
+  MOV byte ptr [di+1], "$"
   POP cx
   POP bx
   POP ax
@@ -662,6 +665,7 @@ spausdintiDekoduotusBaitus PROC
   PUSH cx
   PUSH si
   PUSH di
+  ;INT 3h
 
   MOV ch, 0
   MOV cl, dekBaituSkc
@@ -718,13 +722,12 @@ rasytiIFaila PROC
 ENDP rasytiIFaila
 
 rasytiInstrukcija PROC
-  ;MOV dx, offset dekBaitaiHex
-  ;CALL rasytiIFaila
+  MOV dx, offset dekBaitaiHex
+  CALL rasytiIFaila
   MOV dx, offset tarpas
+  ADD dx, cx
   CALL rasytiIFaila
   MOV dx, offset rBuf
-  CALL rasytiIFaila
-  MOV dx, offset naujaEil
   CALL rasytiIFaila
   RET
 rasytiInstrukcija ENDP
