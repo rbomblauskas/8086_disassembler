@@ -1,0 +1,135 @@
+     MOV AH, 09
+     MOV DX, 01DE
+     INT 21
+     MOV AH, 0A
+     MOV DX, 0163
+     INT 21
+     MOV AH, 09
+     MOV DX, 0211
+     INT 21
+     XOR CH, CH
+     SUB AX, AX
+     MOV CL, [0164]
+     MOV BX, 0165
+     MOV DL, 41
+     MOV DH, 5A
+     CMP DL, [BX]
+     JG 05
+     CMP DH, [BX]
+     JL 01
+     INC AX
+     INC BX
+     DEC CX
+     CMP CX, 00
+     JG F0
+     MOV DL, 0A
+     DIV DL
+     MOV [0210], AH
+     ADD [0210], 30
+     XOR AH, AH
+     DIV DL
+     MOV [020F], AH
+     ADD [020F], 30
+     MOV [020E], AL
+     ADD [020E], 30
+     MOV AH, 09
+     MOV DX, 01F1
+     INT 21
+     MOV AH, 4C
+     MOV AL, 00
+     INT 21
+     JNS 00
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 24
+     AND AL, 49
+     JBE 65
+     JNB 6B
+     NEATPAZINTA
+     JZ 65
+     AND [DI+69], AH
+     NEATPAZINTA
+     JNZ 74
+     NEATPAZINTA
+     CMP CL, [DI]
+     OR AH, [SI]
+     PUSH DX
+     NEATPAZINTA
+     NEATPAZINTA
+     NEATPAZINTA
+     JNZ 20
+     JZ 69
+     NEATPAZINTA
+     NEATPAZINTA
+     AND [SI+69], AH
+     NEATPAZINTA
+     JPE 69
+     JNZ 6A
+     JNZ 20
+     JB 61
+     NEATPAZINTA
+     NEATPAZINTA
+     JPE 69
+     JNZ 3A
+     AND [BX+SI], AH
+     AND [BX+SI], AH
+     OR AX, 240A
+     NEATPAZINTA
+     JNZ 6A

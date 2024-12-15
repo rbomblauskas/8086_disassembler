@@ -38,21 +38,23 @@ grpPoslinkis  EQU 4096
   rmf  dw 0
   
   arDekModRM db 0
-  dekInstruk db 255
+  ;dekInstruk db 255
 
   dekBaitai    db 10 dup(?)
   dekBaituSkc  db 0 
   dekBaitaiHex db 20 dup(?)
 
   nuskBaituSkc db skBufDydis
+  instrukRod   dw 0100h
 
   rmLent    db "BX+SI$BX+DI$BP+SI$BP+DI$SI$$$$DI$$$$BP$$$$BX$"
   regLent0  db "AL$CL$DL$BL$AH$CH$DH$BH$"
   regLent1  db "AX$CX$DX$BX$SP$BP$SI$DI$"
   regLent2  db "ES$CS$SS$DS$"
   
+  tarpas    db 5 dup(" "), "$"
   klZin     db "Klaida", 10, 13, "$"
-  naujaEil  db 10, 13, "$"
+  naujaEil  db 10, "$"
   pagZin    db "Sveiki, cia pagalbos pranesimas", 10, 13, "$"
   neatpaz   db "NEATPAZINTA$"
   
@@ -116,23 +118,21 @@ grpPoslinkis  EQU 4096
   JC  KLAIDA
   MOV dFail, ax
 
-  JMP INSTRUKCIJU_DEKODAVIMAS
-  
-  ;REZULTATU_FAILO_SUKURIMAS:
-  ;MOV ah, 3Ch
-  ;MOV al, 00
-  ;MOV dx, offset rVard
-  ;INT 21h
-  ;JC  KLAIDA
-  ;MOV rFail, ax
   ;JMP INSTRUKCIJU_DEKODAVIMAS
+  
+  REZULTATU_FAILO_SUKURIMAS:
+  MOV ah, 3Ch
+  MOV cx, 0
+  MOV dx, offset rVard
+  INT 21h
+  JC  KLAIDA
+  MOV rFail, ax
+  JMP INSTRUKCIJU_DEKODAVIMAS
 
   PAGALBA:
   MOV dx, offset pagZin
   CALL spausdintiEilute
   JMP PABAIGA
-
-  ;MOV si, offset masKodas
   
   INSTRUKCIJU_DEKODAVIMAS:
   ;INT 3h
@@ -141,9 +141,15 @@ grpPoslinkis  EQU 4096
   MOV di, offset rBuf
   CALL dekoduotiInstrukcija
 
-  CALL spausdintiDekoduotusBaitus
-  MOV dx, offset rBuf
-  CALL spausdintiEilute
+  CALL rasytiInstrukcija
+
+  ;CALL spausdintiDekoduotusBaitus
+  ;MOV dx, offset rBuf
+  ;CALL spausdintiEilute
+
+  XOR ah, ah
+  MOV al, dekBaituSkc
+  ADD instrukRod, ax
 
   JMP INSTRUKCIJU_DEKODAVIMAS
   
@@ -413,13 +419,11 @@ PROC dekoduotiArgumenta
   
   NEPRASIDEDA_G:
   CMP byte ptr[bx], "I"
-  JE PRASIDEDA_I_J_O
+  JE PRASIDEDA_I_J
   CMP byte ptr[bx], "J"
-  JE PRASIDEDA_I_J_O
-  CMP byte ptr[bx], "O"
-  JE PRASIDEDA_I_J_O
-  JMP NEPRASIDEDA_I_J_O
-  PRASIDEDA_I_J_O:
+  JE PRASIDEDA_I_J
+  JMP NEPRASIDEDA_I_J
+  PRASIDEDA_I_J:
   CMP byte ptr[bx+1], "v"
   JE BETARPISKAS_ZODIS
   BETARPISKAS_BAITAS:
@@ -431,7 +435,18 @@ PROC dekoduotiArgumenta
   CALL rasytiAX
   JMP ARGUMENTO_DEKODAVIMO_PABAIGA
 
-  NEPRASIDEDA_I_J_O:
+  NEPRASIDEDA_I_J:
+  CMP byte ptr[bx], "O"
+  JNE NEPRASIDEDA_O
+  MOV dl, "["
+  CALL rasytiSimboli
+  CALL skaitytiZodi
+  CALL rasytiAX
+  MOV dl, "]"
+  CALL rasytiSimboli
+  JMP ARGUMENTO_DEKODAVIMO_PABAIGA
+  
+  NEPRASIDEDA_O:
   CMP byte ptr[bx], "S"
   JNE NEPRASIDEDA_S
   CALL dekoduotiModRM
@@ -653,9 +668,8 @@ spausdintiDekoduotusBaitus PROC
   MOV si, offset dekBaitai
   MOV di, offset dekBaitaiHex
   BAITU_KODAVIMO_CIKLAS:
-  MOV al, [si]
+  LODSB
   CALL rasytiAL
-  INC si
   LOOP BAITU_KODAVIMO_CIKLAS
   MOV byte ptr[di], "$"
 
@@ -665,5 +679,54 @@ spausdintiDekoduotusBaitus PROC
 
   RET
 spausdintiDekoduotusBaitus ENDP
+
+skaiciuotiEilutesIlgi PROC
+;DX laikoma rodykle i eilute
+;CX grazinamas eilutes ilgis
+  PUSH bx
+  MOV bx, dx
+  MOV cx, 0
+  EILUTES_ILGIO_SKAICIAVIMAS:
+  INC cx
+  INC bx
+  CMP byte ptr[bx], "$"
+  JNE EILUTES_ILGIO_SKAICIAVIMAS
+  POP bx
+  RET
+skaiciuotiEilutesIlgi ENDP
+
+rasytiIFaila PROC
+  PUSH ax
+  PUSH bx
+  MOV bx, rFail
+  MOV	ah, 40h
+  CALL skaiciuotiEilutesIlgi
+  INT	21h
+  JC	klaidaRasant
+  CMP	cx, ax
+  JNE	DALINIS_IRASYMAS
+  RasykBufPabaiga:
+  POP bx
+  POP ax
+  RET
+  DALINIS_IRASYMAS:
+  JMP	RasykBufPabaiga
+  klaidaRasant:
+  MOV	ax, 0
+  JMP	RasykBufPabaiga
+  RET
+ENDP rasytiIFaila
+
+rasytiInstrukcija PROC
+  ;MOV dx, offset dekBaitaiHex
+  ;CALL rasytiIFaila
+  MOV dx, offset tarpas
+  CALL rasytiIFaila
+  MOV dx, offset rBuf
+  CALL rasytiIFaila
+  MOV dx, offset naujaEil
+  CALL rasytiIFaila
+  RET
+rasytiInstrukcija ENDP
 
 END PRADZIA
