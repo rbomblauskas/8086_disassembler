@@ -141,6 +141,11 @@ grpPoslinkis  EQU 4096
   MOV di, offset rBuf
   CALL dekoduotiInstrukcija
 
+  MOV di, offset dekBaitaiHex
+  MOV ax, instrukRod
+  CALL rasytiAX
+  MOV [di], " :"
+  ADD di, 2
   CALL spausdintiDekoduotusBaitus
   CALL rasytiInstrukcija
 
@@ -670,7 +675,7 @@ spausdintiDekoduotusBaitus PROC
   MOV ch, 0
   MOV cl, dekBaituSkc
   MOV si, offset dekBaitai
-  MOV di, offset dekBaitaiHex
+  ;MOV di, offset dekBaitaiHex
   BAITU_KODAVIMO_CIKLAS:
   LODSB
   CALL rasytiAL
