@@ -14,7 +14,7 @@ opLentDydis   EQU 5000
 grpPoslinkis  EQU 4096
 
 .data
-  masKodas  db 81h, 0BFh, 05h, 01h, 04h, 08h, 8Ah, 0CFh, 0Eh, 24h, 24h, 80h, 06h, 10h, 02h, 30h, 8ch, 0c8h, 0b4h, 09h, 0bah, 0deh, 01h, 0cdh, 21h, 0b4h, 0ah, 0bah, 63h, 01h, 0cdh, 21h, 0b4h, 09h, 0bah, 11h, 02h
+  ;masKodas  db 81h, 0BFh, 05h, 01h, 04h, 08h, 8Ah, 0CFh, 0Eh, 24h, 24h, 80h, 06h, 10h, 02h, 30h, 8ch, 0c8h, 0b4h, 09h, 0bah, 0deh, 01h, 0cdh, 21h, 0b4h, 0ah, 0bah, 63h, 01h, 0cdh, 21h, 0b4h, 09h, 0bah, 11h, 02h
   
   skBuf     db skBufDydis dup ('$')
   rBuf      db rBufDydis dup ('$')
@@ -135,7 +135,6 @@ grpPoslinkis  EQU 4096
   JMP PABAIGA
   
   INSTRUKCIJU_DEKODAVIMAS:
-  ;INT 3h
   MOV dekBaituSkc, 0
   MOV arDekModRM, 0
   MOV di, offset rBuf
@@ -343,79 +342,79 @@ PROC dekoduotiArgumenta
   OP_REG_T: JMP OP_REG
 
   OP_ATM_0:
-  mov dl, "["
-  call rasytiSimboli
-  cmp rmf, 6
-  jne NETIESIOGINIS_ADRESAS
-  call skaitytiZodi
-  call rasytiAX
-  jmp OP_ATM_0_PABAIGA
+  MOV dl, "["
+  CALL rasytiSimboli
+  CMP rmf, 6
+  JNE NETIESIOGINIS_ADRESAS
+  CALL skaitytiZodi
+  CALL rasytiAX
+  JMP OP_ATM_0_PABAIGA
   NETIESIOGINIS_ADRESAS:
-  mov ax, rmf
-  mov dl, 6
-  mul dl
-  mov dx, offset rmLent
-  add dx, ax
-  call rasytiIkiDolerio
+  MOV ax, rmf
+  MOV dl, 6
+  MUL dl
+  MOV dx, offset rmLent
+  ADD dx, ax
+  CALL rasytiIkiDolerio
   OP_ATM_0_PABAIGA:
-  mov dl, "]"
-  call rasytiSimboli
-  jmp ARGUMENTO_DEKODAVIMO_PABAIGA
+  MOV dl, "]"
+  CALL rasytiSimboli
+  JMP ARGUMENTO_DEKODAVIMO_PABAIGA
 
   OP_ATM_1:
-  mov dl, "["
-  call rasytiSimboli
-  mov ax, rmf
-  mov dl, 6
-  mul dl
-  mov dx, offset rmLent
-  add dx, ax
-  call rasytiIkiDolerio
-  mov dl, "+"
-  call rasytiSimboli
-  call skaitytiBaita
-  call rasytiAL
-  mov dl, "]"
-  call rasytiSimboli
-  jmp ARGUMENTO_DEKODAVIMO_PABAIGA
+  MOV dl, "["
+  CALL rasytiSimboli
+  MOV ax, rmf
+  MOV dl, 6
+  MUL dl
+  MOV dx, offset rmLent
+  ADD dx, ax
+  CALL rasytiIkiDolerio
+  MOV dl, "+"
+  CALL rasytiSimboli
+  CALL skaitytiBaita
+  CALL rasytiAL
+  MOV dl, "]"
+  CALL rasytiSimboli
+  JMP ARGUMENTO_DEKODAVIMO_PABAIGA
 
   OP_ATM_2:
-  mov dl, "["
-  call rasytiSimboli
-  mov ax, rmf
-  mov dl, 6
-  mul dl
-  mov dx, offset rmLent
-  add dx, ax
-  call rasytiIkiDolerio
-  mov dl, "+"
-  call rasytiSimboli
-  call skaitytiZodi
-  call rasytiAX
-  mov dl, "]"
-  call rasytiSimboli
-  jmp ARGUMENTO_DEKODAVIMO_PABAIGA
+  MOV dl, "["
+  CALL rasytiSimboli
+  MOV ax, rmf
+  MOV dl, 6
+  MUL dl
+  MOV dx, offset rmLent
+  ADD dx, ax
+  CALL rasytiIkiDolerio
+  MOV dl, "+"
+  CALL rasytiSimboli
+  CALL skaitytiZodi
+  CALL rasytiAX
+  MOV dl, "]"
+  CALL rasytiSimboli
+  JMP ARGUMENTO_DEKODAVIMO_PABAIGA
 
   OP_REG:
-  mov ax, rmf
-  mov dl, 3
-  mul dl
-  mov dx, offset regLent0
+  MOV ax, rmf
+  MOV dl, 3
+  MUL dl
+  MOV dx, offset regLent0
   CMP byte ptr[bx+1], "b"
   JE REGISTRO_ARGUMENTO_IRASYMAS
   MOV dx, offset regLent1
   REGISTRO_ARGUMENTO_IRASYMAS:
-  add dx, ax
-  call rasytiIkiDolerio
-  jmp ARGUMENTO_DEKODAVIMO_PABAIGA
+  ADD dx, ax
+  CALL rasytiIkiDolerio
+  JMP ARGUMENTO_DEKODAVIMO_PABAIGA
 
   NEPRASIDEDA_E_DIDZIAJA:
   CMP byte ptr[bx], "G"
   JNE NEPRASIDEDA_G
   CALL dekoduotiModRM
-  mov ax, regf
-  mov dl, 3
-  mul dl
+  MOV ax, regf
+  MOV dl, 3
+  MUL dl
   MOV dx, offset regLent0
   CMP byte ptr[bx+1], "b"
   JE REGISTRO_ARGUMENTO_IRASYMAS_2
@@ -458,12 +457,12 @@ PROC dekoduotiArgumenta
   CMP byte ptr[bx], "S"
   JNE NEPRASIDEDA_S
   CALL dekoduotiModRM
-  mov ax, regf
-  mov dl, 3
-  mul dl
-  mov dx, offset regLent2
-  add dx, ax
-  call rasytiIkiDolerio
+  MOV ax, regf
+  MOV dl, 3
+  MUL dl
+  MOV dx, offset regLent2
+  ADD dx, ax
+  CALL rasytiIkiDolerio
   JMP ARGUMENTO_DEKODAVIMO_PABAIGA
 
   NEPRASIDEDA_S:
@@ -613,31 +612,31 @@ PROC rasytiAL
 ENDP rasytiAL
 
 PROC rasytiHex
-  push ax
-  push dx
+  PUSH ax
+  PUSH dx
   
-  and al, 0Fh ;nunulinam vyresniji pusbaiti AND al, 00001111b
-  cmp al, 9
-  jbe PrintHexSkaitmuo_0_9
-  jmp PrintHexSkaitmuo_A_F
+  AND al, 0Fh ;nunulinam vyresniji pusbaiti AND al, 00001111b
+  CMP al, 9
+  JBE PRINT_HEX_SKAITMUO_0_9
+  JMP PRINT_HEX_SKAITMUO_A_F
   
-  PrintHexSkaitmuo_A_F: 
-  sub al, 10 ;10-15 ===> 0-5
-  add al, 41h
-  mov [di], al
-  inc di
-  jmp PrintHexSkaitmuo_grizti
+  PRINT_HEX_SKAITMUO_A_F: 
+  SUB al, 10 ;10-15 ===> 0-5
+  ADD al, 41h
+  MOV [di], al
+  INC di
+  JMP PrintHexSkaitmuo_grizti
   
   
-  PrintHexSkaitmuo_0_9: ;0-9
-  add al, 30h
-  mov [di], al
-  inc di
-  jmp printHexSkaitmuo_grizti
+  PRINT_HEX_SKAITMUO_0_9: ;0-9
+  ADD al, 30h
+  MOV [di], al
+  INC di
+  JMP printHexSkaitmuo_grizti
   
   printHexSkaitmuo_grizti:
-  pop dx
-  pop ax
+  POP dx
+  POP ax
   RET
 ENDP rasytiHex
 
