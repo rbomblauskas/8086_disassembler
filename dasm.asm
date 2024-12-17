@@ -151,7 +151,7 @@ grpPoslinkis  EQU 4096
   CALL rasytiAX
   MOV [di], " :"
   ADD di, 2
-  CALL spausdintiDekoduotusBaitus
+  CALL rasytiDekoduotusBaitus
   CALL rasytiInstrukcija
 
   MOV ax, dekBaituSkc
@@ -694,7 +694,7 @@ skaitytiVardaKomEil PROC
   RET
 skaitytiVardaKomEil ENDP
 
-spausdintiDekoduotusBaitus PROC
+rasytiDekoduotusBaitus PROC
   PUSH cx
   PUSH si
   PUSH di
@@ -714,7 +714,7 @@ spausdintiDekoduotusBaitus PROC
   POP cx
 
   RET
-spausdintiDekoduotusBaitus ENDP
+rasytiDekoduotusBaitus ENDP
 
 skaiciuotiEilutesIlgi PROC
 ;DX laikoma rodykle i eilute
