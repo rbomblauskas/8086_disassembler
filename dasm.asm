@@ -51,6 +51,8 @@ grpPoslinkis  EQU 4096
   regLent0  db "AL$CL$DL$BL$AH$CH$DH$BH$"
   regLent1  db "AX$CX$DX$BX$SP$BP$SI$DI$"
   regLent2  db "ES$CS$SS$DS$"
+  bytePtr   db "BYTE PTR $"
+  wordPtr   db "WORD PTR $"
   
   tarpas    db 20 dup(" "), "$"
   klZin     db "Klaida", 10, 13, "$"
@@ -342,6 +344,7 @@ PROC dekoduotiArgumenta
   OP_REG_T: JMP OP_REG
 
   OP_ATM_0:
+  CALL rasytiPriesdeli
   MOV dl, "["
   CALL rasytiSimboli
   CMP rmf, 6
@@ -362,6 +365,7 @@ PROC dekoduotiArgumenta
   JMP ARGUMENTO_DEKODAVIMO_PABAIGA
 
   OP_ATM_1:
+  CALL rasytiPriesdeli
   MOV dl, "["
   CALL rasytiSimboli
   MOV ax, rmf
@@ -379,6 +383,7 @@ PROC dekoduotiArgumenta
   JMP ARGUMENTO_DEKODAVIMO_PABAIGA
 
   OP_ATM_2:
+  CALL rasytiPriesdeli
   MOV dl, "["
   CALL rasytiSimboli
   MOV ax, rmf
@@ -426,11 +431,7 @@ PROC dekoduotiArgumenta
   
   NEPRASIDEDA_G:
   CMP byte ptr[bx], "I"
-  JE PRASIDEDA_I_J
-  CMP byte ptr[bx], "J"
-  JE PRASIDEDA_I_J
-  JMP NEPRASIDEDA_I_J
-  PRASIDEDA_I_J:
+  JNE NEPRASIDEDA_I
   CMP byte ptr[bx+1], "v"
   JE BETARPISKAS_ZODIS
   BETARPISKAS_BAITAS:
@@ -442,7 +443,31 @@ PROC dekoduotiArgumenta
   CALL rasytiAX
   JMP ARGUMENTO_DEKODAVIMO_PABAIGA
 
-  NEPRASIDEDA_I_J:
+  NEPRASIDEDA_I:
+  CMP byte ptr[bx], "J"
+  CMP byte ptr[bx+1], "v"
+  JE ZODZIO_POSLINKIS
+
+  BAITO_POSLINKIS:
+  CALL skaitytiBaita
+  CBW
+  MOV dh, 0
+  MOV dl, dekBaituSkc
+  ADD ax, instrukRod
+  ADD ax, dx
+  CALL rasytiAX
+  JMP ARGUMENTO_DEKODAVIMO_PABAIGA
+
+  ZODZIO_POSLINKIS:
+  CALL skaitytiZodi
+  MOV dh, 0
+  MOV dl, dekBaituSkc
+  ADD ax, instrukRod
+  ADD ax, dx
+  CALL rasytiAX
+  JNE NEPRASIDEDA_J
+
+  NEPRASIDEDA_J:
   CMP byte ptr[bx], "O"
   JNE NEPRASIDEDA_O
   MOV dl, "["
@@ -587,6 +612,19 @@ PROC praleistiArgumenta
   RET
 ENDP praleistiArgumenta
 
+PROC rasytiPriesdeli
+  CMP byte ptr [bx+1], "v"
+  JE ZODZIO_PRIESDELIS
+  BAITO_PRIESDELIS:
+  MOV dx, offset bytePtr
+  JMP PRIESDELIO_RASYMO_PABAIGA 
+  ZODZIO_PRIESDELIS:
+  MOV dx, offset wordPtr
+  PRIESDELIO_RASYMO_PABAIGA:
+  CALL rasytiIkiDolerio
+  RET
+ENDP rasytiPriesdeli
+
 PROC rasytiAX
   push ax
   mov al, ah
@@ -625,16 +663,15 @@ PROC rasytiHex
   ADD al, 41h
   MOV [di], al
   INC di
-  JMP PrintHexSkaitmuo_grizti
-  
+  JMP PRINT_HEX_SKAITMUO_GRIZTI
   
   PRINT_HEX_SKAITMUO_0_9: ;0-9
   ADD al, 30h
   MOV [di], al
   INC di
-  JMP printHexSkaitmuo_grizti
+  JMP PRINT_HEX_SKAITMUO_GRIZTI
   
-  printHexSkaitmuo_grizti:
+  PRINT_HEX_SKAITMUO_GRIZTI:
   POP dx
   POP ax
   RET
