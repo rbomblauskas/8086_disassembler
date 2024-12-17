@@ -259,6 +259,8 @@ PROC dekoduotiInstrukcija
   MOV bx, instruk
   CALL praleistiArgumenta
   ARGUMENTU_DEKODAVIMAS:
+  CMP byte ptr[bx], " "
+  JE INSTRUKCIJOS_DEKODAVIMO_PABAIGA
   CALL rasytiTarpa
   CALL dekoduotiArgumenta
   CALL praleistiArgumenta
