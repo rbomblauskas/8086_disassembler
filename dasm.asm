@@ -41,7 +41,7 @@ grpPoslinkis  EQU 4096
   ;dekInstruk db 255
 
   dekBaitai    db 10 dup(?)
-  dekBaituSkc  db 0 
+  dekBaituSkc  dw 0 
   dekBaitaiHex db 20 dup(?)
 
   nuskBaituSkc db skBufDydis
@@ -57,7 +57,7 @@ grpPoslinkis  EQU 4096
   tarpas    db 20 dup(" "), "$"
   klZin     db "Klaida", 10, 13, "$"
   naujaEil  db 10, "$"
-  pagZin    db "Sveiki, cia pagalbos pranesimas", 10, 13, "$"
+  pagZin    db "Programos naudojimas: DASM.EXE <vykdomasis_failas> <rezultatu_failas>", 10, 13, "$"
   neatpaz   db "NEATPAZINTA$"
   
 
@@ -135,6 +135,12 @@ grpPoslinkis  EQU 4096
   MOV dx, offset pagZin
   CALL spausdintiEilute
   JMP PABAIGA
+
+  KLAIDA:
+  MOV ah, 09h
+  MOV dx, offset klZin
+  INT 21h
+  JMP PABAIGA
   
   INSTRUKCIJU_DEKODAVIMAS:
   MOV dekBaituSkc, 0
@@ -150,30 +156,15 @@ grpPoslinkis  EQU 4096
   CALL spausdintiDekoduotusBaitus
   CALL rasytiInstrukcija
 
-  ;CALL spausdintiDekoduotusBaitus
-  ;MOV dx, offset rBuf
-  ;CALL spausdintiEilute
-
-  XOR ah, ah
-  MOV al, dekBaituSkc
+  MOV ax, dekBaituSkc
   ADD instrukRod, ax
 
   JMP INSTRUKCIJU_DEKODAVIMAS
   
-  ;DEC dekInstruk
-  ;CMP dekInstruk, 0
-  ;JNE INSTRUKCIJU_DEKODAVIMAS
-
   PABAIGA:
   MOV ah, 4Ch
   MOV al, 0
   INT 21h
-
-  KLAIDA:
-  MOV ah, 09h
-  MOV dx, offset klZin
-  INT 21h
-  JMP PABAIGA
 
 PROC skaitytiIsFailo
   PUSH bx
@@ -208,8 +199,7 @@ PROC skaitytiBaita
   PRALEISTI_BUFERIO_NUSKAITYMA:
   LODSB
   MOV bx, offset dekBaitai
-  MOV dx, 0
-  MOV dl, dekBaituSkc
+  MOV dx, dekBaituSkc
   ADD bx, dx
   MOV byte ptr[bx], al
   INC dekBaituSkc
@@ -451,21 +441,17 @@ PROC dekoduotiArgumenta
   BAITO_POSLINKIS:
   CALL skaitytiBaita
   CBW
-  MOV dh, 0
-  MOV dl, dekBaituSkc
   ADD ax, instrukRod
-  ADD ax, dx
+  ADD ax, dekBaituSkc
   CALL rasytiAX
   JMP ARGUMENTO_DEKODAVIMO_PABAIGA
 
   ZODZIO_POSLINKIS:
   CALL skaitytiZodi
-  MOV dh, 0
-  MOV dl, dekBaituSkc
   ADD ax, instrukRod
-  ADD ax, dx
+  ADD ax, dekBaituSkc
   CALL rasytiAX
-  JNE NEPRASIDEDA_J
+  JMP ARGUMENTO_DEKODAVIMO_PABAIGA
 
   NEPRASIDEDA_J:
   CMP byte ptr[bx], "O"
@@ -708,8 +694,7 @@ spausdintiDekoduotusBaitus PROC
   PUSH di
   ;INT 3h
 
-  MOV ch, 0
-  MOV cl, dekBaituSkc
+  MOV cx, dekBaituSkc
   MOV si, offset dekBaitai
   ;MOV di, offset dekBaitaiHex
   BAITU_KODAVIMO_CIKLAS:
