@@ -31,7 +31,6 @@ grpPoslinkis  EQU 4096
   instruk   dw ?
 
   modJmpTable dw offset OP_ATM_0, offset OP_ATM_1, offset OP_ATM_2, offset OP_REG
-  jmpTableOff dw 0
 
   modf dw 0
   regf dw 0
@@ -323,21 +322,15 @@ PROC dekoduotiArgumenta
   JMP NEPRASIDEDA_E_DIDZIAJA
   PRASIDEDA_E_DIDZIAJA:
   CALL dekoduotiModRM
-  ;INT 3h
-  ;TODO: PADARYTI JUMP TABLE
-  CMP modf, 0
-  JE OP_ATM_0_T
-  CMP modf, 1
-  JE OP_ATM_1_T
-  CMP modf, 2
-  JE OP_ATM_2_T
-  CMP modf, 3
-  JE OP_REG_T
-  
-  OP_ATM_0_T: JMP OP_ATM_0
-  OP_ATM_1_T: JMP OP_ATM_1
-  OP_ATM_2_T: JMP OP_ATM_2
-  OP_REG_T: JMP OP_REG
+
+  ;JUMP TABLE
+  PUSH bx
+  MOV bx, modf
+  SHL bx, 1
+  ADD bx, offset modJmpTable
+  MOV ax, [bx]
+  POP bx
+  JMP ax
 
   OP_ATM_0:
   CALL rasytiPriesdeli
