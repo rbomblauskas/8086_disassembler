@@ -56,6 +56,7 @@ grpPoslinkis  EQU 4096
   
   tarpas    db 20 dup(" "), "$"
   klZin     db "Klaida", 10, 13, "$"
+  klUzdZin  db "Klaida uzdarant faila", 10, 13, "$"
   naujaEil  db 10, "$"
   pagZin    db "Programos naudojimas: DASM.EXE <vykdomasis_failas> <rezultatu_failas>", 10, 13, "$"
   neatpaz   db "NEATPAZINTA$"
@@ -107,10 +108,7 @@ grpPoslinkis  EQU 4096
   INT	21h
   JC	KLAIDA
 
-  MOV ah, 3Eh
-  MOV bx, lFail
-  INT 21h
-  JC  KLAIDA
+  CALL uzdarytiFaila
 
   DUOMENU_FAILO_ATIDARYMAS:
   MOV ah, 3Dh
@@ -160,6 +158,12 @@ grpPoslinkis  EQU 4096
   ADD instrukRod, ax
 
   JMP INSTRUKCIJU_DEKODAVIMAS
+
+  FAILU_UZDARYMAS:
+  MOV bx, dFail
+  CALL uzdarytiFaila
+  MOV bx, rFail
+  CALL uzdarytiFaila
   
   PABAIGA:
   MOV ah, 4Ch
@@ -207,7 +211,7 @@ PROC skaitytiBaita
   POP bx
   RET
   FAILO_PABAIGA:
-  JMP PABAIGA
+  JMP FAILU_UZDARYMAS
 ENDP skaitytiBaita
 
 PROC skaitytiZodi
@@ -726,6 +730,20 @@ skaiciuotiEilutesIlgi PROC
   POP bx
   RET
 skaiciuotiEilutesIlgi ENDP
+
+uzdarytiFaila PROC
+  PUSH ax
+  MOV ah, 3Eh
+  INT 21h
+  JC  KLAIDA_UZDARANT
+  POP ax
+  RET
+  KLAIDA_UZDARANT:
+  MOV ah, 09h
+  MOV dx, offset klUzdZin
+  INT 21h
+  JMP PABAIGA
+uzdarytiFaila ENDP
 
 rasytiIFaila PROC
   PUSH ax
