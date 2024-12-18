@@ -57,7 +57,9 @@ grpPoslinkis  EQU 4096
   klZin     db "Klaida", 10, 13, "$"
   klUzdZin  db "Klaida uzdarant faila", 10, 13, "$"
   naujaEil  db 10, "$"
-  pagZin    db "Programos naudojimas: DASM.EXE <vykdomasis_failas> <rezultatu_failas>", 10, 13, "$"
+  pagZin    db "8086/8088 disasemblerio autorius: Rokas Bomblauskas, PS 1 k. 1 gr.", 10, 13
+            db "Programa apdoroja vykdomaji (.COM) faila", 10, 13
+            db "Programos naudojimas: DASM.EXE <vykdomasis_failas> <rezultatu_failas>", 10, 13, "$"
   neatpaz   db "NEATPAZINTA$"
   
 
