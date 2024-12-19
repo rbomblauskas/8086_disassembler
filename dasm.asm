@@ -39,9 +39,10 @@ grpPoslinkis  EQU 4096
   arDekModRM db 0
   ;dekInstruk db 255
 
-  dekBaitai    db 10 dup(?)
-  dekBaituSkc  dw 0 
-  dekBaitaiHex db 20 dup(?)
+  dekBaitai     db 10 dup(?)
+  dekBaituSkc   dw 0 
+  
+  rezEil        db 100 dup(?)
 
   nuskBaituSkc db skBufDydis
   instrukRod   dw 0100h
@@ -145,7 +146,7 @@ grpPoslinkis  EQU 4096
   MOV di, offset rBuf
   CALL dekoduotiInstrukcija
 
-  MOV di, offset dekBaitaiHex
+  MOV di, offset rezEil
   MOV ax, instrukRod
   CALL rasytiAX
   MOV [di], " :"
@@ -690,19 +691,15 @@ skaitytiVardaKomEil ENDP
 rasytiDekoduotusBaitus PROC
   PUSH cx
   PUSH si
-  PUSH di
   ;INT 3h
 
   MOV cx, dekBaituSkc
   MOV si, offset dekBaitai
-  ;MOV di, offset dekBaitaiHex
   BAITU_KODAVIMO_CIKLAS:
   LODSB
   CALL rasytiAL
   LOOP BAITU_KODAVIMO_CIKLAS
-  MOV byte ptr[di], "$"
 
-  POP di
   POP si
   POP cx
 
@@ -761,12 +758,15 @@ rasytiIFaila PROC
 ENDP rasytiIFaila
 
 rasytiInstrukcija PROC
-  MOV dx, offset dekBaitaiHex
-  CALL rasytiIFaila
+  MOV ax, dekBaituSkc
+  SHL ax, 1
   MOV dx, offset tarpas
-  ADD dx, cx
-  CALL rasytiIFaila
+  ADD dx, ax
+  CALL rasytiIkiDolerio
   MOV dx, offset rBuf
+  CALL rasytiIkiDolerio
+  MOV dx, offset rezEil
+  MOV byte ptr[di], "$"
   CALL rasytiIFaila
   RET
 rasytiInstrukcija ENDP
