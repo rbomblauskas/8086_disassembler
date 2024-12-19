@@ -54,11 +54,11 @@ grpPoslinkis  EQU 4096
   wordPtr   db "WORD PTR $"
   
   tarpas    db 20 dup(" "), "$"
-  klZin     db "Klaida", 10, 13, "$"
+  klAtZin     db "Klaida atidarant faila", 10, 13, "$"
   klUzdZin  db "Klaida uzdarant faila", 10, 13, "$"
   naujaEil  db 10, "$"
   pagZin    db "8086/8088 disasemblerio autorius: Rokas Bomblauskas, PS 1 k. 1 gr.", 10, 13
-            db "Programa apdoroja vykdomaji (.COM) faila", 10, 13
+            db "Programa perskaito vykdomaji (.COM) faila ir isveda asemblerio instrukcijas", 10, 13
             db "Programos naudojimas: DASM.EXE <vykdomasis_failas> <rezultatu_failas>", 10, 13, "$"
   neatpaz   db "NEATPAZINTA$"
   
@@ -99,7 +99,7 @@ grpPoslinkis  EQU 4096
   MOV al, 00
   MOV dx, offset lVard
   INT 21h
-  JC  KLAIDA
+  JC  KLAIDA_ATIDARANT
   MOV lFail, ax
   
   MOV bx, lFail
@@ -107,7 +107,7 @@ grpPoslinkis  EQU 4096
   MOV	cx, opLentDydis
   MOV	dx, offset opLent
   INT	21h
-  JC	KLAIDA
+  JC	KLAIDA_ATIDARANT
 
   CALL uzdarytiFaila
 
@@ -116,17 +116,15 @@ grpPoslinkis  EQU 4096
   MOV al, 00
   MOV dx, offset dVard
   INT 21h
-  JC  KLAIDA
+  JC  KLAIDA_ATIDARANT
   MOV dFail, ax
-
-  ;JMP INSTRUKCIJU_DEKODAVIMAS
   
   REZULTATU_FAILO_SUKURIMAS:
   MOV ah, 3Ch
   MOV cx, 0
   MOV dx, offset rVard
   INT 21h
-  JC  KLAIDA
+  JC  KLAIDA_ATIDARANT
   MOV rFail, ax
   JMP INSTRUKCIJU_DEKODAVIMAS
 
@@ -135,9 +133,9 @@ grpPoslinkis  EQU 4096
   CALL spausdintiEilute
   JMP PABAIGA
 
-  KLAIDA:
+  KLAIDA_ATIDARANT:
   MOV ah, 09h
-  MOV dx, offset klZin
+  MOV dx, offset klAtZin
   INT 21h
   JMP PABAIGA
   
